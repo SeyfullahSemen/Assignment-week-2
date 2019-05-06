@@ -1,17 +1,21 @@
 package com.company;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 public class Main {
     private static int[] randomArray;
 
     public static void main(String[] args) {
         // call the randomGenerator() function
+        int[] numbers = {16, 18, 3, 21, 14, 7, 9, 5};
+        int threadAmount = 4;
 
-        new SelectionSortThread("One");
-        new SelectionSortThread("Two");
-        new SelectionSortThread("Three");
+        startThreads(threadAmount);
+
+        splitArray(threadAmount, numbers);
+
 
         try {
             Thread.sleep(10000);
@@ -19,6 +23,27 @@ public class Main {
             System.out.println("Main thread Interrupted");
         }
         System.out.println("Main thread exiting.");
+    }
+
+    private static void splitArray(int threadAmount, int[] numbers) {
+        if (numbers.length != 0) {
+            int n = numbers.length;
+            for (int i = 0; i < threadAmount; i++) {
+            }
+            int[] a = Arrays.copyOfRange(numbers, 0, (n + 1) / 2);
+            int[] b = Arrays.copyOfRange(numbers, (n + 1) / 2, n);
+
+            System.out.println(Arrays.toString(a));
+            System.out.println(Arrays.toString(b));
+        } else {
+            System.out.println("There are no elements inside this array!");
+        }
+    }
+
+    private static void startThreads(int threadAmount) {
+        for (int i = 0; i < threadAmount; i++) {
+            new SelectionSortThread("Thread " + i);
+        }
     }
 //        long before = System.currentTimeMillis();
 //        randomNumberGenerator();
@@ -30,7 +55,6 @@ public class Main {
 //        ob.printArray(generatedList());
 //
 //        System.out.println(System.currentTimeMillis() - before);
-
 
     /**
      * @return randomly generated integers

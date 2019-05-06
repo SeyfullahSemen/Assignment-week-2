@@ -12,7 +12,6 @@ public class SelectionSortThread implements Runnable {
         name = thread;
         t = new Thread(this, name);
         System.out.println("New thread: " + t);
-        System.out.println("The amount of processors you have " + getAmountOfProcessors());
         t.start();
     }
 
