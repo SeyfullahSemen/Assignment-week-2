@@ -1,40 +1,70 @@
 package com.company;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Random;
 
 public class Main {
     private static int[] randomArray;
+    private static final int NUMBER_COUNT = 16;
+    private static int threadAmount = Runtime.getRuntime().availableProcessors();
+    private static int lowestNumber = Integer.MAX_VALUE;
 
     public static void main(String[] args) {
-        // call the randomGenerator() function
-        int[] numbers = {16, 18, 3, 21, 14, 7, 9, 5};
-        int threadAmount = 4;
+        System.out.println("Running array with " + NUMBER_COUNT + " elements on " + threadAmount + " threads");
 
-        startThreads(threadAmount);
+        // Generate numbers array and split them equally to subarrays
+        int[] numbers = generateNumber(NUMBER_COUNT);
+        System.out.println("Original array:\n" + Arrays.toString(numbers));
+        int[][] splittedArray = new int[threadAmount][(numbers.length/threadAmount)];
 
-        splitArray(threadAmount, numbers);
+        /*startThreads(threadAmount);*/
 
+        // Split arrays and print them
+        splitArray(threadAmount, numbers, splittedArray);
+        System.out.println("\nSplit arrays:\n" + Arrays.deepToString(splittedArray));
 
+        // Sort subarrays and printing them
+        for (int i = 0; i < threadAmount; i++) {
+            splittedArray[i] = sort(splittedArray[i]);
+        }
+
+        System.out.println("\nSplit & sorted arrays:\n" + Arrays.deepToString(splittedArray));
+
+        /*
+            Find the lowest number in every sorted subarray
+            The only thing we have to do for this is comparing [0]
+         */
+        for (int i = 0; i < splittedArray.length; i++) {
+            if(splittedArray[i][0] < lowestNumber)
+                lowestNumber = splittedArray[i][0];
+        }
+        System.out.println("\nLowest number in split arrays: " + lowestNumber);
+
+        /*
+            Add comment
+         */
         try {
             Thread.sleep(10000);
         } catch (InterruptedException e) {
             System.out.println("Main thread Interrupted");
         }
-        System.out.println("Main thread exiting.");
+        //System.out.println("Main thread exiting.");
     }
 
-    private static void splitArray(int threadAmount, int[] numbers) {
-        if (numbers.length != 0) {
-            int n = numbers.length;
-            for (int i = 0; i < threadAmount; i++) {
-            }
-            int[] a = Arrays.copyOfRange(numbers, 0, (n + 1) / 2);
-            int[] b = Arrays.copyOfRange(numbers, (n + 1) / 2, n);
+    private static void splitArray(int threadAmount, int[] numbers, int[][] splittedArray) {
+        int elPerSubArr = numbers.length / threadAmount;
 
-            System.out.println(Arrays.toString(a));
-            System.out.println(Arrays.toString(b));
+        int x = 0;
+        int i = x;
+
+        if (numbers.length != 0) {
+            while (i < numbers.length) {
+                for (int j = 0; j < elPerSubArr; j++) {
+                    splittedArray[x][j] = numbers[i];
+                    i++;
+                }
+                x++;
+            }
         } else {
             System.out.println("There are no elements inside this array!");
         }
@@ -47,12 +77,12 @@ public class Main {
     }
 //        long before = System.currentTimeMillis();
 //        randomNumberGenerator();
-//        generatedList();
+//        generateNumber();
 
 //        SelectionSort ob = new SelectionSort();
-//        ob.sort(generatedList());
+//        ob.sort(generateNumber());
 //        System.out.println("Sorted array");
-//        ob.printArray(generatedList());
+//        ob.printArray(generateNumber());
 //
 //        System.out.println(System.currentTimeMillis() - before);
 
@@ -65,18 +95,16 @@ public class Main {
         return randomNum;
     }
 
-    public static int[] generatedList() {
-        randomArray = new int[100000];
+    public static int[] generateNumber(int amount) {
+        randomArray = new int[amount];
         for (int i = 0; i < randomArray.length; i++) {
             randomArray[i] = randomNumberGenerator();
-        }
-        for (int i : randomArray) {
-            System.out.println("The array: " + i);
         }
 
         return randomArray;
     }
 
+    // Can be used to check if array is sorted
     public static boolean isSorted(int[] a) {
         for (int i = 0; i < a.length; i++) {
             return a[i] < a[i + 1];
@@ -84,8 +112,23 @@ public class Main {
         return false;
     }
 
-    private static long timeElapsed() {
-        return System.currentTimeMillis();
-    }
+    private static int[] sort(int arr[]) {
+        int n = arr.length;
 
+        // One by one move boundary of unsorted subarray
+        for (int i = 0; i < n - 1; i++) {
+            // Find the minimum element in unsorted array
+            int min_idx = i;
+            for (int j = i + 1; j < n; j++)
+                if (arr[j] < arr[min_idx])
+                    min_idx = j;
+
+            // Swap the found minimum element with the first
+            // element
+            int temp = arr[min_idx];
+            arr[min_idx] = arr[i];
+            arr[i] = temp;
+        }
+        return arr;
+    }
 }
