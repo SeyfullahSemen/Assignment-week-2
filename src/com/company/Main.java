@@ -5,9 +5,10 @@ import java.util.Random;
 
 public class Main {
     private static int[] randomArray;
-    private static final int NUMBER_COUNT = 16;
-    private static int threadAmount = Runtime.getRuntime().availableProcessors();
+    private static final int NUMBER_COUNT = 7;
+    private static int threadAmount = 4;
     private static int lowestNumber = Integer.MAX_VALUE;
+    private static int lowestIndex = Integer.MAX_VALUE;
 
     public static void main(String[] args) {
         System.out.println("Running array with " + NUMBER_COUNT + " elements on " + threadAmount + " threads");
@@ -15,12 +16,11 @@ public class Main {
         // Generate numbers array and split them equally to subarrays
         int[] numbers = generateNumber(NUMBER_COUNT);
         System.out.println("Original array:\n" + Arrays.toString(numbers));
-        int[][] splittedArray = new int[threadAmount][(numbers.length/threadAmount)];
+        int[][] splittedArray = splitArray(threadAmount, numbers);
 
         /*startThreads(threadAmount);*/
 
         // Split arrays and print them
-        splitArray(threadAmount, numbers, splittedArray);
         System.out.println("\nSplit arrays:\n" + Arrays.deepToString(splittedArray));
 
         // Sort subarrays and printing them
@@ -35,10 +35,18 @@ public class Main {
             The only thing we have to do for this is comparing [0]
          */
         for (int i = 0; i < splittedArray.length; i++) {
-            if(splittedArray[i][0] < lowestNumber)
+            if(splittedArray[i][0] < lowestNumber) {
                 lowestNumber = splittedArray[i][0];
+                lowestIndex = i;
+            }
         }
-        System.out.println("\nLowest number in split arrays: " + lowestNumber);
+
+        splittedArray = swap(splittedArray, lowestIndex);
+
+        System.out.println("\nLowest number in [0] of split arrays: " + lowestNumber + " found on splitArray["
+                + lowestIndex + "][0]");
+        numbers = regenerateNumbers(splittedArray);
+        System.out.println(Arrays.toString(numbers));
 
         /*
             Add comment
@@ -51,23 +59,50 @@ public class Main {
         //System.out.println("Main thread exiting.");
     }
 
-    private static void splitArray(int threadAmount, int[] numbers, int[][] splittedArray) {
-        int elPerSubArr = numbers.length / threadAmount;
+    private static int[][] swap(int[][] splittedArray, int lowestIndex) {
+        int tempNumber = splittedArray[lowestIndex][0];
+        splittedArray[lowestIndex][0] = splittedArray[0][0];
+        splittedArray[0][0] = tempNumber;
 
+        return splittedArray;
+    }
+
+    private static int[] regenerateNumbers(int[][] splittedArray) {
+        int[] numbers = new int[NUMBER_COUNT];
         int x = 0;
-        int i = x;
 
-        if (numbers.length != 0) {
-            while (i < numbers.length) {
-                for (int j = 0; j < elPerSubArr; j++) {
-                    splittedArray[x][j] = numbers[i];
-                    i++;
-                }
+        for (int i = 0; i < splittedArray.length; i++) {
+            for (int j = 0; j < splittedArray[i].length; j++) {
+                numbers[x] = splittedArray[i][j];
                 x++;
             }
-        } else {
-            System.out.println("There are no elements inside this array!");
         }
+        return numbers;
+    }
+
+    private static int[][] splitArray(int arrayAmount, int[] numbers) {
+        if (numbers.length == 0) {
+            return new int[0][0];
+        }
+
+        int splitLength = (int) Math.ceil((double) numbers.length / (double) arrayAmount);
+        int[][] splits = new int[arrayAmount][];
+
+        int j = 0;
+        int k = 0;
+        for (int i = 0; i < numbers.length; i++) {
+            if (k == splitLength) {
+                k = 0;
+                j++;
+            }
+            if (splits[j] == null) {
+                int remainingNumbers = numbers.length - i;
+                splits[j] = new int[Math.min(remainingNumbers, splitLength)];
+            }
+            splits[j][k++] = numbers[i];
+        }
+        return splits;
+
     }
 
     private static void startThreads(int threadAmount) {
