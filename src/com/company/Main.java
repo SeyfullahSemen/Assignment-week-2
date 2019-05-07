@@ -9,6 +9,7 @@ public class Main {
     private static int threadAmount = 4;
     private static int lowestNumber = Integer.MAX_VALUE;
     private static int lowestIndex = Integer.MAX_VALUE;
+    private static int lowestPosition = Integer.MAX_VALUE;
 
     public static void main(String[] args) {
         System.out.println("Running array with " + NUMBER_COUNT + " elements on " + threadAmount + " threads");
@@ -21,30 +22,28 @@ public class Main {
         /*startThreads(threadAmount);*/
 
         // Split arrays and print them
-        System.out.println("\nSplit arrays:\n" + Arrays.deepToString(splittedArray));
+        //System.out.println("\nSplit arrays:\n" + Arrays.deepToString(splittedArray));
 
-        // Sort subarrays and printing them
-        for (int i = 0; i < threadAmount; i++) {
-            splittedArray[i] = sort(splittedArray[i]);
-        }
-
-        System.out.println("\nSplit & sorted arrays:\n" + Arrays.deepToString(splittedArray));
+        //System.out.println("\nSplit & sorted arrays:\n" + Arrays.deepToString(splittedArray));
 
         /*
             Find the lowest number in every sorted subarray
             The only thing we have to do for this is comparing [0]
          */
         for (int i = 0; i < splittedArray.length; i++) {
-            if(splittedArray[i][0] < lowestNumber) {
-                lowestNumber = splittedArray[i][0];
-                lowestIndex = i;
+            for (int j = 0; j < splittedArray[i].length; j++) {
+                if(splittedArray[i][j] < lowestNumber) {
+                    lowestNumber = splittedArray[i][j];
+                    lowestIndex = i;
+                    lowestPosition = j;
+                }
             }
         }
 
-        splittedArray = swap(splittedArray, lowestIndex);
+        splittedArray = swap(splittedArray, lowestIndex, lowestPosition);
 
-        System.out.println("\nLowest number in [0] of split arrays: " + lowestNumber + " found on splitArray["
-                + lowestIndex + "][0]");
+        System.out.println("\nLowest number in split arrays: " + lowestNumber + " found on splitArray["
+                + lowestIndex + "][" + lowestPosition + "]");
         numbers = regenerateNumbers(splittedArray);
         System.out.println(Arrays.toString(numbers));
 
@@ -59,9 +58,9 @@ public class Main {
         //System.out.println("Main thread exiting.");
     }
 
-    private static int[][] swap(int[][] splittedArray, int lowestIndex) {
-        int tempNumber = splittedArray[lowestIndex][0];
-        splittedArray[lowestIndex][0] = splittedArray[0][0];
+    private static int[][] swap(int[][] splittedArray, int lowestIndex, int lowestPosition) {
+        int tempNumber = splittedArray[lowestIndex][lowestPosition];
+        splittedArray[lowestIndex][lowestPosition] = splittedArray[0][0];
         splittedArray[0][0] = tempNumber;
 
         return splittedArray;
